@@ -13,7 +13,7 @@
 int main ( int argc, char** argv )
 {
     //image loading
-    cv::Mat Input_Image = cv::imread("./../rgb/29.jpg");  
+    cv::Mat Input_Image = cv::imread("./../../29.jpg");  
     if (!Input_Image.data)
     {
         printf("No image data \n");

@@ -14,10 +14,6 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_executable(app src/hand_detection_segmentation.cpp)
 
-# for libraries included in the main
-#
-# target_link_libraries(test_main ......lib_name.......)
-#
 
 target_link_libraries( app
     PUBLIC LII::classifier)
@@ -27,6 +23,9 @@ target_link_libraries( app
     
 target_link_libraries( app
     PUBLIC LII::detection)
+
+target_link_libraries( app
+    PUBLIC LII::evaluation)
 
 target_link_libraries( app
     PUBLIC ${OpenCV_LIBS} )

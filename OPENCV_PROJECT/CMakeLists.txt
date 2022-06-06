@@ -8,6 +8,7 @@ project( Create_and_test_hand_detection_and_segmentation_library
 add_subdirectory( lib/classifier )
 add_subdirectory( lib/detection )
 add_subdirectory( lib/segmentation )
+add_subdirectory( lib/evaluation )
 
 # Create the targets for the entire example-app.
 add_subdirectory( app )
