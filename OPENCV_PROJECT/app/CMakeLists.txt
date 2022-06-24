@@ -19,13 +19,16 @@ target_link_libraries( app
     PUBLIC LII::classifier)
     
 target_link_libraries( app
-    PUBLIC LII::segmentation)
+    PUBLIC LII::skin_segmentation)
     
 target_link_libraries( app
     PUBLIC LII::detection)
 
 target_link_libraries( app
     PUBLIC LII::evaluation)
+
+target_link_libraries( app
+    PUBLIC LII::segment)
 
 target_link_libraries( app
     PUBLIC ${OpenCV_LIBS} )
