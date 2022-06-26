@@ -1,0 +1,1 @@
+These files are used by the app, while the ones in the "training" directory are used for the training.
