@@ -1,4 +1,4 @@
 classes = 1
 train = data/train.txt
 names = data/obj.names
-backup = /mydrive/yolov4-train/backup
+backup = /mydrive/yolov4/backup
