@@ -1,21 +1,11 @@
 //main program
 
-#include <stdio.h>
 #include <iostream>
 
 #include "skin_segmentation.h"
 #include "detection.h"
 #include "classifier.h"
-
-//for segmentation//
-#include <cstdio>
-#include <cstdlib>
-#include "image.h"
-#include "misc.h"
-#include "pnmfile.h"
-#include "segment-image.h"
-
-#include <opencv2/opencv.hpp>
+#include "get_segmentation.h"
 
 int main ( int argc, char** argv )
 {
@@ -42,21 +32,12 @@ int main ( int argc, char** argv )
     const char *input_path = "./../../pr1.ppm";
     const char *output_path = "./../../segmentated/prova.ppm";
         
-    printf("loading input image.\n");
-    image<rgb> *input = loadPPM(input_path);
-        
-    printf("processing\n");
-    int num_ccs; 
-    image<rgb> *seg = segment_image(input, sigma, k, min_size, &num_ccs); 
-    savePPM(seg, output_path);
-
-    printf("got %d components\n", num_ccs);
+    get_segmentation(sigma, k, min_size, input_path, output_path);
 
     cv::Mat segmented = cv::imread("./../../segmentated/prova.ppm");
     cv::imshow("segmented", segmented);
 
-
-
     cv::waitKey(0);
     return 0;
 }
+
