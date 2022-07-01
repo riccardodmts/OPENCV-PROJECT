@@ -2,12 +2,7 @@
 //author: Riccardo De Monte
 //hours spent: 2
 
-/*
-#ifndef DETECTION_H
-#define DETECTION_H
 
-#endif
-*/
 
 #ifndef _STD_
 #define _STD_

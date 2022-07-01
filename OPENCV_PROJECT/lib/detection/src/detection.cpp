@@ -16,7 +16,7 @@ HandDetector::HandDetector(){
     nmaxima_thresh = 0.4f;
     conf_threshold = 0.6f;
 
-    yolo_net = readNetFromDarknet("./../../yolo_files/yolov4.cfg", "./../../yolo_files/yolov4-obj_3000.weights");
+    yolo_net = readNetFromDarknet("./../../../yolo_files/yolov4.cfg", "./../../../yolo_files/yolov4-obj_3000.weights");
 
     model = DetectionModel(yolo_net);
     model.setInputParams(normalize, cv::Size(size, size), cv::Scalar(), true);
@@ -56,7 +56,7 @@ HandDetector::HandDetector(float conf_threshold, float nmaxima_thresh) : conf_th
   
     normalize = 1/255.0f;
     size = 416;
-    yolo_net = readNetFromDarknet("./../../yolo_files/yolov4.cfg", "./../../yolo_files/yolov4-obj_3000.weights");
+    yolo_net = readNetFromDarknet("./../../../yolo_files/yolov4.cfg", "./../../../yolo_files/yolov4-obj_3000.weights");
 
     model = DetectionModel(yolo_net);
     model.setInputParams(normalize, cv::Size(size, size), cv::Scalar(), true);

@@ -1,7 +1,13 @@
-//segmentation.cpp
+//skin_segmentation.cpp
+
+#ifndef SKIN_SEG
+#define SKIN_SEG
 
 #include "skin_segmentation.h"
 
+#endif
+
+//compute the region of the image that can be considered as skin
 cv::Mat get_skin(cv::Mat Input_image)
 {
     cv::Mat RGB = Input_image;
@@ -58,7 +64,7 @@ cv::Mat get_skin(cv::Mat Input_image)
 
 
 
-
+//implementation of the k-means clustering algorithm
 cv::Mat K_Means(cv::Mat Input, int K, cv::Mat &RGB_centers) {
 
 	cv::Mat samples(Input.rows * Input.cols, Input.channels(), CV_32F);

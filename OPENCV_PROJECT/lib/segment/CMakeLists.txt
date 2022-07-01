@@ -19,6 +19,9 @@ add_library( segment
 
 target_include_directories( segment
     PUBLIC include )
+
+target_link_libraries( segment
+    PUBLIC LII::detection)
     
 target_link_libraries( segment
     PUBLIC ${OpenCV_LIBS} )
