@@ -25,32 +25,31 @@
 
 int main ( int argc, char** argv )
 {
-    //////////////////////  SUMMARY (TO DO)   //////////////////
-    /*
-    -CLASSIFY
-    -GET ROI (BOUNDING BOX) FROM CLASSIFIER
-    -APPLY SKIN DETECTION & SEGMENT
-    -APPLY MASK (BOUNDING BOX) TO SEGMENTED IMAGE
-    -FIND NUMBER OF CLASSES
-    -FOR EACH CLASS SUBSTITUTE ORIGINAL PIECE OF IMAGE
-    -RE-RUN CLASSIFIER : IF HAND TAKE THAT REGION AS CORRECTLY SEGMENTED OTHERWISE TRY FOR NEW CLASS
-    */
 
     HandDetector detector;
     HandSegmentor segment(&detector);
 
-
-    cv::Mat prova = cv::imread("./../../../29.jpg");
-    cv::imwrite("./../../../pr1.ppm", prova);
-
-    segment.get_segmentation();
-
-    cv::Mat segmented = cv::imread("./../../../segmentated/prova.ppm");
-    cv::imshow("segmented", segmented);
-
-    segment.test();
+ 
+    //DA FARE 
+    //-sistemare intersezione
+    //-controllare valori per selezione aree (0.5 o 0.6)
+    //skin detection non da maschera in b/w
+    //verificare funzione b/w
 
 
-    cv::waitKey(0);
+    cv::Mat prova = cv::imread("./../../22.jpg");
+
+    std::vector<cv::Rect> boxes;
+    std::vector<float> conf;
+    detector.detect_hands(prova, conf, boxes);
+    std::vector<cv::Mat> masks;
+    segment.final_masks("./../../22.jpg", boxes, masks);
+
+    for(size_t i = 0; i < masks.size(); i++)
+    {
+        cv::imshow("mask", masks[i]);
+        cv::waitKey(0);
+    }
+
     return 0;
 }

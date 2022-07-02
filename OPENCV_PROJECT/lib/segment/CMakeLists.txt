@@ -22,6 +22,9 @@ target_include_directories( segment
 
 target_link_libraries( segment
     PUBLIC LII::detection)
+
+target_link_libraries( segment
+    PUBLIC LII::skin_segmentation)
     
 target_link_libraries( segment
     PUBLIC ${OpenCV_LIBS} )

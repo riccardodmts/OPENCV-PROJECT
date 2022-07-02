@@ -24,8 +24,8 @@ HandSegmentor::HandSegmentor(){
     k = 800;
     min_size = 30;
 
-    input_path = "./../../../pr1.ppm";
-    output_path = "./../../../segmentated/prova.ppm";
+    input_path = "./../../pr1.ppm";
+    output_path = "./../../segmentated/prova.ppm";
 
 }
 
@@ -37,8 +37,8 @@ HandSegmentor::HandSegmentor(HandDetector* ptrHandDetector) : ptrHandDetector(pt
     k = 1000;
     min_size = 100;
 
-    input_path = "./../../../pr1.ppm";
-    output_path = "./../../../segmentated/prova.ppm";
+    input_path = "./../../pr1.ppm";
+    output_path = "./../../segmentated/prova.ppm";
 
 }
 
@@ -213,13 +213,158 @@ void HandSegmentor::get_mask_original_size(const cv::Rect& roi, const cv::Rect& 
 
 }
 
+int HandSegmentor::test_region(const std::vector<cv::Rect>& boxes, const cv::Rect& original_box){
+
+    int original_area = original_box.width * original_box.height;
+    float sum_area = 0;
+
+    for(size_t i = 0; i < boxes.size(); i++)
+    {
+        if( (float)(boxes[i].width * boxes[i].height) > (float)(0.5 * original_area) )
+            return 1;
+
+        sum_area = sum_area + (float)(boxes[i].width * boxes[i].height);
+    }
+
+    if(sum_area > (float)(0.6 * original_area))
+        return 1;
+    else
+        return 0;
+
+}
+
+void HandSegmentor::get_idx_of_regions(const cv::Mat& roi_img, const std::vector<cv::Mat>& masks, std::vector<int>& idxs, const cv::Rect& original_box){
+
+    idxs.reserve(masks.size());
+
+    for(size_t i = 0; i < masks.size(); i++)
+    {
+        cv::Mat temp;
+        roi_img.copyTo(temp, masks[i]);
+        std::vector<cv::Rect> boxes;
+        std::vector<float> conf_values;
+        ptrHandDetector->detect_hands(temp, conf_values, boxes);
+
+        if(test_region(boxes, original_box))
+            idxs.push_back(i);
+    }
+}
+
+void HandSegmentor::get_mask_original_size(const cv::Rect& roi, const cv::Rect& new_roi, const std::vector<cv::Mat>& masks, std::vector<cv::Mat>& new_masks){
+
+    for(size_t i = 0; i < masks.size(); i++)
+    {
+        cv::Mat temp;
+        get_mask_original_size(roi, new_roi, masks[i], temp);
+        new_masks.push_back(temp);
+    }
+
+}
+
+void HandSegmentor::get_mask_union(const std::vector<cv::Mat>& masks, std::vector<int>& idxs, cv::Mat& final_mask){
+
+    int row = masks[0].rows;
+    int col = masks[0].cols;
+    final_mask = cv::Mat::zeros(row, col, CV_8UC1);
+
+    for(size_t i = 0; i < idxs.size(); i++)
+    {
+        for(size_t r = 0; r < row; r++)
+        {
+            for(size_t c = 0; c < col; c++)
+            {
+                if(masks[idxs[i]].at<uchar>(r,c) == 255)
+                    final_mask.at<uchar>(r,c) = 255;
+            }
+        }
+    }
+}
+
+void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks){
+
+    cv::Mat img = cv::imread(path);
+    cv::imwrite("./../../pr1.ppm", img);// check path
+
+    get_segmentation();
+
+    cv::Mat segmented = cv::imread("./../../segmentated/prova.ppm");
+
+    bool is_gray = is_Greyscale(img, 30);
+    int max_disp = 20;
+
+    for(size_t i = 0; i < boxes.size(); i++)
+    {
+        cv::Rect new_box;
+        get_expanded_roi(img, boxes[i], new_box, max_disp);
+        cv::Mat img_cropped = img(new_box);
+        cv::Mat seg_cropped = segmented(new_box);
+        std::vector<cv::Mat> masks_per_region;
+        get_masks_per_region(seg_cropped, masks_per_region);
+        std::vector<int> idxs;
+        get_idx_of_regions(img_cropped, masks_per_region, idxs, boxes[i]);
+
+        cv::Mat final_mask; //final result for current bbox
+
+        if(idxs.size() == 0 && !is_gray)
+        {
+            final_mask = get_skin(img(boxes[i]));
+            masks.push_back(final_mask);
+        }
+
+        else if(idxs.size() > 0)
+        {
+            std::vector<cv::Mat> resized;
+            get_mask_original_size(boxes[i], new_box, masks_per_region, resized);
+            cv::Mat mask_union;
+            get_mask_union(resized, idxs, mask_union);
+
+            //if(!is_gray)
+            //{
+            //    cv::Mat skin = get_skin(img(boxes[i]));
+             //   intersect_masks(mask_union, skin, final_mask);
+            //    masks.push_back(final_mask);
+            //}
+
+            //else
+                masks.push_back(mask_union);
+        }
+
+        else
+        {
+            cv::Mat bad_mask = cv::Mat::ones(boxes[i].height, boxes[i].width, CV_8UC1);
+            masks.push_back(bad_mask);
+        }
+    }
+}
+
+bool is_Greyscale(cv::Mat img, int batch_size){
+
+  for(int i=0;i<batch_size;i++)
+  {
+    int rand_rows = rand() % img.rows + 1;
+    int rand_cols = rand() % img.cols + 1;
+
+    if( int(img.at<cv::Vec3b>(rand_rows,rand_cols)[0]) != int(img.at<cv::Vec3b>(rand_rows,rand_cols)[1]) || int(img.at<cv::Vec3b>(rand_rows,rand_cols)[1]) != int(img.at<cv::Vec3b>(rand_rows,rand_cols)[2]))
+      return false;
+
+  }
+  return true;
+}
+
+void HandSegmentor::intersect_masks(const cv::Mat& input_union, const cv::Mat& input_skin, cv::Mat& output){
+
+    int row = input_union.rows;
+    int col = input_union.cols;
+    output = cv::Mat::zeros(row, col, CV_8UC1);
 
 
+    for(size_t r = 0; r < row; r++)
+    {
+        for(size_t c = 0; c < col; c++)
+        {
+            if((input_union.at<uchar>(r,c) == 255) && (input_skin.at<uchar>(r,c) == 255))
+                output.at<uchar>(r,c) = 255;
+        }
+    }
 
-
-
-
-
-
-
-
+}

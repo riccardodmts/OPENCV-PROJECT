@@ -16,7 +16,7 @@ cv::Mat get_skin(cv::Mat Input_image)
     cv::Mat YCBCR;
     cv::cvtColor(RGB, YCBCR, cv::COLOR_BGR2YCrCb);
 
-    cv::Mat out = Input_image;
+    cv::Mat out = Input_image.clone();
 
     //(H : Hue ; S: Saturation ; R : Red ; B: Blue ; G : Green ; Cr, Cb : Chrominance components ; Y : luminance component )
     float R, G, B, H, S, V, Y, CB, CR;
