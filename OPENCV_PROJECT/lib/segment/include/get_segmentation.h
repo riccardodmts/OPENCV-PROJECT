@@ -5,7 +5,7 @@
 #include "detection.h"
 #include <stdlib.h>
 #include "skin_segmentation.h"
-#endif 
+#endif
 
 class HandSegmentor{
 
@@ -38,6 +38,8 @@ class HandSegmentor{
         void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//quella che sostituirà test
         void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);
 
+        cv::Mat final_mask(const char* path, std::vector<cv::Rect> boxes, std::vector<cv::Mat> masks);
+
     //PRIVATE METHODS
 
     private:
@@ -51,7 +53,7 @@ class HandSegmentor{
         void get_mask_union(const std::vector<cv::Mat>& masks, std::vector<int>& idxs, cv::Mat& final_mask);
         void intersect_masks(const cv::Mat& input_union, const cv::Mat& input_skin, cv::Mat& output);
 
-        
+
 
 };
 

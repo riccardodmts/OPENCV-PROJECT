@@ -209,8 +209,8 @@ void Evaluation::PixelAccuracy(){
       {
         true_positive++;
         positive++;
-        //accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
-        accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
+        accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+        //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
       else if(int( gray_true_mask.at<uchar>(i,j) ) != 0  && int( gray_det_mask.at<uchar>(i,j) ) == 0)
@@ -223,8 +223,8 @@ void Evaluation::PixelAccuracy(){
       {
         false_positive++;
         negative++;
-        //accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
-        accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
+        accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+        //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
     }
