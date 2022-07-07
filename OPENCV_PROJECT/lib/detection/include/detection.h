@@ -54,7 +54,7 @@ class HandDetector{
         //detect hands: it returns (output) the image with the boxes drawn
         void detect_hands(const cv::Mat& image, cv::Mat & output);
     
-    private:
+    //private:
 
         //PRIVATE METHODS
         //draw bounding boxes, provided the results of the hads detection (the boxes)

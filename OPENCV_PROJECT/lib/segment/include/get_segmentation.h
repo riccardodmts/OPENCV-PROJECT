@@ -36,7 +36,7 @@ class HandSegmentor{
         void test();//per testare, poi da cancellare
 
         void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//quella che sostituirà test
-    
+        void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);
 
     //PRIVATE METHODS
 
@@ -50,6 +50,8 @@ class HandSegmentor{
         void get_idx_of_regions(const cv::Mat& roi_img, const std::vector<cv::Mat>& masks, std::vector<int>& idxs, const cv::Rect& original_box);
         void get_mask_union(const std::vector<cv::Mat>& masks, std::vector<int>& idxs, cv::Mat& final_mask);
         void intersect_masks(const cv::Mat& input_union, const cv::Mat& input_skin, cv::Mat& output);
+
+        
 
 };
 

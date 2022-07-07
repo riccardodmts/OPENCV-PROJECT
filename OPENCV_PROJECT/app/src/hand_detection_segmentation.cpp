@@ -37,13 +37,29 @@ int main ( int argc, char** argv )
     //verificare funzione b/w
 
 
-    cv::Mat prova = cv::imread("./../../22.jpg");
+    cv::Mat prova = cv::imread("./../../test/rgb/21.jpg");
+
+    cv::Mat temp = get_skin(prova);
+
+    cv::Mat mask;
+    segment.from_skin_to_mask(temp, mask);
+    cv::imshow("prova", mask);
+    cv::waitKey(0);
 
     std::vector<cv::Rect> boxes;
     std::vector<float> conf;
     detector.detect_hands(prova, conf, boxes);
+
+    cv::Mat output;
+    //detector.detect_hands(prova, output);
+    detector.draw_bbox(prova, output, boxes);
+
+    cv::imshow("detection output", output);
+    cv::waitKey(0);
+
+
     std::vector<cv::Mat> masks;
-    segment.final_masks("./../../22.jpg", boxes, masks);
+    segment.final_masks("./../../test/rgb/21.jpg", boxes, masks);
 
     for(size_t i = 0; i < masks.size(); i++)
     {

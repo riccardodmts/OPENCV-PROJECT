@@ -2,21 +2,48 @@
 
 #ifndef SKIN_SEG
 #define SKIN_SEG
-
+#include <vector>
 #include "skin_segmentation.h"
 
 #endif
 
+cv::Mat equalizeIntensity(const cv::Mat& inputImage)
+{
+    if(inputImage.channels() >= 3)
+    {
+        cv::Mat ycrcb;
+
+        cv::cvtColor(inputImage,ycrcb, cv::COLOR_BGR2YCrCb);
+
+        std::vector<cv::Mat> channels;
+        cv::split(ycrcb,channels);
+
+        cv::equalizeHist(channels[0], channels[0]);
+
+        cv::Mat result;
+        cv::merge(channels,ycrcb);
+
+        cv::cvtColor(ycrcb,result,cv::COLOR_YCrCb2BGR);
+
+        return result;
+    }
+    return cv::Mat();
+}
+
 //compute the region of the image that can be considered as skin
 cv::Mat get_skin(cv::Mat Input_image)
-{
+{   
+
+    
+
     cv::Mat RGB = Input_image;
     cv::Mat HSV;
     cv::cvtColor(RGB, HSV, cv::COLOR_BGR2HSV);
     cv::Mat YCBCR;
     cv::cvtColor(RGB, YCBCR, cv::COLOR_BGR2YCrCb);
 
-    cv::Mat out = Input_image.clone();
+    cv::Mat out= Input_image.clone();
+    
 
     //(H : Hue ; S: Saturation ; R : Red ; B: Blue ; G : Green ; Cr, Cb : Chrominance components ; Y : luminance component )
     float R, G, B, H, S, V, Y, CB, CR;

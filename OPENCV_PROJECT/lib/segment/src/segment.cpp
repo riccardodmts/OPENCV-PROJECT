@@ -283,11 +283,11 @@ void HandSegmentor::get_mask_union(const std::vector<cv::Mat>& masks, std::vecto
 void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks){
 
     cv::Mat img = cv::imread(path);
-    cv::imwrite("./../../pr1.ppm", img);// check path
+    cv::imwrite("./../../../pr1.ppm", img);// check path
 
     get_segmentation();
 
-    cv::Mat segmented = cv::imread("./../../segmentated/prova.ppm");
+    cv::Mat segmented = cv::imread("./../../../segmentated/prova.ppm");
 
     bool is_gray = is_Greyscale(img, 30);
     int max_disp = 20;
@@ -307,7 +307,9 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
 
         if(idxs.size() == 0 && !is_gray)
         {
-            final_mask = get_skin(img(boxes[i]));
+            cv::Mat skin = get_skin(img(boxes[i]));
+            
+            from_skin_to_mask(skin, final_mask);
             masks.push_back(final_mask);
         }
 
@@ -318,20 +320,22 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
             cv::Mat mask_union;
             get_mask_union(resized, idxs, mask_union);
 
-            //if(!is_gray)
-            //{
-            //    cv::Mat skin = get_skin(img(boxes[i]));
-             //   intersect_masks(mask_union, skin, final_mask);
-            //    masks.push_back(final_mask);
-            //}
+            if(!is_gray)
+            {
+                cv::Mat skin = get_skin(img(boxes[i]));
+                cv::Mat mask_from_skin;
+                from_skin_to_mask(skin, mask_from_skin);
+                intersect_masks(mask_union, mask_from_skin, final_mask);
+                masks.push_back(final_mask);
+            }
 
-            //else
-                masks.push_back(mask_union);
+            //else 
+            masks.push_back(mask_union);
         }
 
         else
         {
-            cv::Mat bad_mask = cv::Mat::ones(boxes[i].height, boxes[i].width, CV_8UC1);
+            cv::Mat bad_mask = cv::Mat(boxes[i].height, boxes[i].width, CV_8UC1, cv::Scalar(255));
             masks.push_back(bad_mask);
         }
     }
@@ -368,3 +372,24 @@ void HandSegmentor::intersect_masks(const cv::Mat& input_union, const cv::Mat& i
     }
 
 }
+
+void HandSegmentor::from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output){
+
+    int rows = skin_output.rows;
+    int cols = skin_output.cols;
+
+    output = cv::Mat::zeros(rows, cols, CV_8UC1);
+    for(int i = 0; i < rows; i++){
+
+        for(int j = 0; j < cols; j++){
+        
+           if((skin_output.at<cv::Vec3b>(i, j)[0] == 0.0f)&&(skin_output.at<cv::Vec3b>(i, j)[1] == 0.0f)&&(skin_output.at<cv::Vec3b>(i, j)[2] == 0.0f));
+           else output.at<uchar>(i,j) = 255;
+     
+        }
+    }
+
+
+}
+
+
