@@ -38,7 +38,7 @@ class HandSegmentor{
         void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//quella che sostituirà test
         void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);
 
-        cv::Mat final_mask(const char* path, std::vector<cv::Rect> boxes, std::vector<cv::Mat> masks);
+        cv::Mat final_mask(const char* path, std::vector<cv::Rect> boxes);
 
     //PRIVATE METHODS
 
