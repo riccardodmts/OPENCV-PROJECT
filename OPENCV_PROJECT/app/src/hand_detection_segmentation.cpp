@@ -34,42 +34,25 @@ int main ( int argc, char** argv )
     HandDetector detector;
     HandSegmentor segment(&detector);
 
+    const char* img_path = "../../test/rgb/22.jpg";
 
-    //DA FARE
-    //-sistemare intersezione
-    //-controllare valori per selezione aree (0.5 o 0.6)
-    //skin detection non da maschera in b/w
-    //verificare funzione b/w
-
-
-    cv::Mat prova = cv::imread("../../test/rgb/08.jpg");
+    cv::Mat prova = cv::imread(img_path);
 
     std::vector<cv::Rect> boxes;
     std::vector<float> conf;
     detector.detect_hands(prova, conf, boxes);
-    std::vector<cv::Mat> masks;
-    segment.final_masks("../../test/rgb/08.jpg", boxes, masks);
-    cv::Mat aux = masks[0];
 
-
-
-    cv::Mat maskk = segment.final_mask("../../test/rgb/08.jpg",boxes,masks);
+    cv::Mat maskk = segment.final_mask(img_path, boxes);
     cv::imshow("mask", maskk);
     cv::waitKey(0);
 
-    Evaluation ev("../../test/rgb/08.jpg", maskk, boxes);
+    Evaluation ev(img_path, maskk, boxes);
     cv::Mat iou_img =  ev.IoU();
     ev.PixelAccuracy();
     cv::imshow("iou", iou_img);
     cv::waitKey(0);
+    cv::destroyAllWindows();
 
-/*
-    for(size_t i = 0; i < masks.size(); i++)
-    {
-        cv::imshow("mask", masks[i]);
-        cv::waitKey(0);
-    }
-    */
 
     return 0;
 }
