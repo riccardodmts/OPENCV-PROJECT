@@ -392,8 +392,12 @@ void HandSegmentor::from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& outpu
 
 }
 
-cv::Mat HandSegmentor::final_mask(const char* path, std::vector<cv::Rect> boxes, std::vector<cv::Mat> masks)
+cv::Mat HandSegmentor::final_mask(const char* path, std::vector<cv::Rect> boxes)
 {
+  std::vector<cv::Mat> masks;
+
+  final_masks(path, boxes, masks);
+
   cv::Mat img = cv::imread(path);
   int row = img.rows;
   int col = img.cols;
