@@ -12,7 +12,7 @@
 
 HandDetector::HandDetector(){
 
-    net =  readNetFromDarknet("./../../../yolo_files/yolov4.cfg", "./../../../yolo_files/yolov4-obj_3000.weights");
+    net =  readNetFromDarknet("./../../yolo_files/yolov4.cfg", "./../../yolo_files/yolov4-obj_3000.weights");
     
     width = 416;
     height = 416;
