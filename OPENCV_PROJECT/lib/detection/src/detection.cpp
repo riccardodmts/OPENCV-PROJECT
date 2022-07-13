@@ -5,13 +5,14 @@
 #include "detection.h"
 #endif 
 
+
 //CONSTRUCTORS
 
 //default one
 
 HandDetector::HandDetector(){
 
-    net =  readNetFromDarknet("./../../yolo_files/yolov4.cfg", "./../../yolo_files/yolov4-obj_3000.weights");
+    net =  readNetFromDarknet("./../../../yolo_files/yolov4.cfg", "./../../../yolo_files/yolov4-obj_3000.weights");
     
     width = 416;
     height = 416;
@@ -143,10 +144,21 @@ void HandDetector::process_results(const std::vector<cv::Mat>& output, std::vect
 
     for(size_t i = 0; i < idxs.size(); i++){
         int idx = idxs[i];
-
+        cv::Rect temp = temp_bboxes[idx];
+        resize_bbox(temp, rows, cols);
         confs.push_back(temp_conf[idx]);
-        bboxes.push_back(temp_bboxes[idx]);
+        bboxes.push_back(temp);
     }
 
+
+}
+
+void HandDetector::resize_bbox(cv::Rect& bbox, int rows, int cols){
+    
+    if(bbox.x < 0) bbox.x = 0;
+    if(bbox.y < 0) bbox.y = 0;
+
+    if(bbox.x + bbox.width > cols) bbox.width = cols - bbox.x;
+    if(bbox.y + bbox.height > rows) bbox.height = rows - bbox.y;
 
 }
