@@ -281,6 +281,8 @@ void HandSegmentor::get_mask_union(const std::vector<cv::Mat>& masks, std::vecto
 }
 
 void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks){
+    
+    //first step: segment the image
 
     cv::Mat img = cv::imread(path);
     cv::imwrite("./../../pr1.ppm", img);// check path
@@ -288,24 +290,33 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
     get_segmentation();
 
     cv::Mat segmented = cv::imread("./../../segmentated/prova.ppm");
-
+    
+    //check if the image is grays cale
     bool is_gray = is_Greyscale(img, 30);
     int max_disp = 20;
-
+    
+    //for each bounding box
     for(size_t i = 0; i < boxes.size(); i++)
     {
         cv::Rect new_box;
+        //expand roi
         get_expanded_roi(img, boxes[i], new_box, max_disp);
+        
+        //get cropped image and cropped segmeted image (using the expanded bbox)
         cv::Mat img_cropped = img(new_box);
         cv::Mat seg_cropped = segmented(new_box);
         std::vector<cv::Mat> masks_per_region;
+        //get a mask for each segmented region in the roi
         get_masks_per_region(seg_cropped, masks_per_region);
         std::vector<int> idxs;
+        
+        //check which regions is hand (which pass the test)
         get_idx_of_regions(img_cropped, masks_per_region, idxs, boxes[i]);
 
         cv::Mat final_mask; //final result for current bbox
-
-        if(idxs.size() == 0 && !is_gray)
+        
+        //4 different cases
+        if(idxs.size() == 0 && !is_gray) //use only skin detection
         {
             cv::Mat skin = get_skin(img(boxes[i]));
 
@@ -313,27 +324,32 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
             masks.push_back(final_mask);
         }
 
-        else if(idxs.size() > 0)
+        else if(idxs.size() > 0) 
         {
             std::vector<cv::Mat> resized;
             get_mask_original_size(boxes[i], new_box, masks_per_region, resized);
             cv::Mat mask_union;
+            
+            //union of all masks that pass the test
             get_mask_union(resized, idxs, mask_union);
 
-            if(!is_gray)
+            if(!is_gray) //second case: intesection skin + ...
             {
                 cv::Mat skin = get_skin(img(boxes[i]));
                 cv::Mat mask_from_skin;
+                //get mask from skin segmentation
                 from_skin_to_mask(skin, mask_from_skin);
+                
+                //intersect the two masks
                 intersect_masks(mask_union, mask_from_skin, final_mask);
                 masks.push_back(final_mask);
             }
 
             else
-            masks.push_back(mask_union);
+            masks.push_back(mask_union); //third case
         }
 
-        else
+        else //fourth case
         {
             cv::Mat bad_mask;
             bad_mask = cv::Mat(boxes[i].height, boxes[i].width, CV_8UC1, cv::Scalar(255)); //to use the heuristic method, comment this line
