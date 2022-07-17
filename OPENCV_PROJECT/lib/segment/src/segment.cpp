@@ -335,7 +335,9 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
 
         else
         {
-            cv::Mat bad_mask = cv::Mat(boxes[i].height, boxes[i].width, CV_8UC1, cv::Scalar(255));
+            cv::Mat bad_mask;
+            bad_mask = cv::Mat(boxes[i].height, boxes[i].width, CV_8UC1, cv::Scalar(255)); //to use the heuristic method, comment this line
+            //get_biggest_region(segmented(boxes[i]), bad_mask); //to use the heuristic method, uncomment this line
             masks.push_back(bad_mask);
         }
     }
@@ -426,4 +428,44 @@ cv::Mat HandSegmentor::final_mask(const char* path, std::vector<cv::Rect> boxes)
   }
 
   return output;
+}
+
+void HandSegmentor::get_biggest_region(cv::Mat& seg_roi, cv::Mat& mask){
+
+    std::vector<cv::Mat> masks;
+
+    get_masks_per_region(seg_roi, masks);
+
+    int n_nozero_pixels = 0;
+    int idx = 0;
+    int temp;
+    for(size_t i = 1; i < masks.size(); i++){
+        temp = count_nozero_pixels(masks[i]);
+
+        if( temp > n_nozero_pixels){
+
+            idx = i;
+            n_nozero_pixels = temp;
+
+        }
+    }
+
+    mask = masks[idx].clone();
+
+
+}
+
+int HandSegmentor::count_nozero_pixels(const cv::Mat& mask){
+
+    int counter = 0;
+
+    for(size_t i = 0; i < mask.rows; i++){
+        for(size_t j = 0; j < mask.cols; j++){
+
+            if((int)(mask.at<uchar>(i,j)) > 0)  counter ++;           
+        }
+    }
+    
+    return counter;
+
 }
