@@ -84,20 +84,6 @@ void Evaluation::ValidateBoundingBox()
     temp_detected_bbox.erase(temp_detected_bbox.begin() + det_max);
   }
 
-  /*
-    if the n. of detected bbox is less than the number of true bbox,
-    we add to the detected box vector, the bounding box (from the one we detected)
-    that maximize the IoU of the remaining true bbox to be assigned
-  */
-  while(count<true_bbox.size())
-  {
-      int true_max = -1, det_max = -1;
-      MaximizeIoU(temp_true_bbox, detected_bbox, true_max, det_max);
-      true_bbox[count] = temp_true_bbox[true_max];
-      detected_bbox.push_back(detected_bbox[det_max]);
-      count++;
-      temp_true_bbox.erase(temp_true_bbox.begin() + true_max);
-  }
 
 }
 
@@ -150,41 +136,63 @@ float Evaluation::IoU(cv::Rect bbox_A, cv::Rect bbox_B)
 	return iou;
 }
 
-cv::Mat Evaluation::IoU()
+cv::Mat Evaluation::IoU(int mode)
 {
   cv::Mat iou_img = image.clone();
   float iou;
-  for(int i=0;i<true_bbox.size();i++)
-  {
-    //drawing the bounding boxes
-    cv::rectangle(iou_img, true_bbox.at(i),cv::Scalar(255,0,0),2);
+
+  for(int i=0;i<detected_bbox.size();i++)
     cv::rectangle(iou_img, detected_bbox.at(i),cv::Scalar(0,0,255),2);
 
-    iou = IoU(true_bbox[i],detected_bbox[i]);
+  //version with the IoU result on the image
+  if(mode == 1)
+  {
+    for(int i=0;i<true_bbox.size();i++)
+    {
+      //drawing the bounding boxes
+      cv::rectangle(iou_img, true_bbox.at(i),cv::Scalar(255,0,0),2);
 
-    //adding the text of the IoU on the image
-    cv::putText(iou_img, //target image
-            "IoU = " + std::to_string(iou), //text
-            cv::Point(true_bbox[i].x-10, true_bbox[i].y-5), //top-left position
-            cv::FONT_HERSHEY_DUPLEX,
-            0.5, //font scale
-            CV_RGB(255,255,255), //font color
-            2);
+
+      iou = IoU(true_bbox[i],detected_bbox[i]);
+
+      //adding the text of the IoU on the image
+      cv::putText(iou_img, //target image
+              "IoU = " + std::to_string(iou), //text
+              cv::Point(true_bbox[i].x-10, true_bbox[i].y-5), //top-left position
+              cv::FONT_HERSHEY_DUPLEX,
+              0.5, //font scale
+              CV_RGB(255,255,255), //font color
+              2);
+    }
+  }
+
+  else
+  {
+    std::cout<<std::endl<<"IoU Results:"<<std::endl;
+    for(int i=0;i<true_bbox.size();i++)
+    {
+      iou = IoU(true_bbox[i],detected_bbox[i]);
+      std::cout<<"IoU-"<<std::to_string(i+1)<<" = "<<iou<<std::endl;
+    }
 
   }
+
   return iou_img;
 }
 
 
 
-void Evaluation::PixelAccuracy(){
+cv::Mat Evaluation::PixelAccuracy(){
 
   //size check
-  if(detected_mask.rows != true_mask.rows || detected_mask.cols != true_mask.cols)
-    return;
+  //if(detected_mask.rows != true_mask.rows || detected_mask.cols != true_mask.cols)
+
 
   cv::Mat accuracy_img = image.clone();
   cv::Mat gray_true_mask, gray_det_mask;
+  int row = image.rows;
+  int col = image.cols;
+  cv::Mat pos_neg_img = cv::Mat::zeros(row, col, CV_8UC3);
 
   // we convert the mask images into gray scale to simplify comparison
   cv::cvtColor(true_mask, gray_true_mask, cv::COLOR_BGR2GRAY);
@@ -210,6 +218,9 @@ void Evaluation::PixelAccuracy(){
         true_positive++;
         positive++;
         accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+        pos_neg_img.at<cv::Vec3b>(i,j)[0] = 255;
+        pos_neg_img.at<cv::Vec3b>(i,j)[1] = 255;
+        pos_neg_img.at<cv::Vec3b>(i,j)[2] = 255;
         //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
@@ -217,6 +228,7 @@ void Evaluation::PixelAccuracy(){
       {
         false_negative++;
         positive++;
+        pos_neg_img.at<cv::Vec3b>(i,j)[2] = 255;
       }
 
       else if(int( gray_true_mask.at<uchar>(i,j) ) == 0  && int( gray_det_mask.at<uchar>(i,j) ) != 0)
@@ -224,34 +236,54 @@ void Evaluation::PixelAccuracy(){
         false_positive++;
         negative++;
         accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+        pos_neg_img.at<cv::Vec3b>(i,j)[0] = 255;
         //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
     }
     int total_pop = detected_mask.rows*detected_mask.cols;
-    std::cout<<total_pop<<std::endl;
-    std::cout<<"False Positive: "<<false_positive<<std::endl;
-    std::cout<<"False Negative: "<<false_negative<<std::endl;
-    std::cout<<"True Positive: "<<true_positive<<std::endl;
-    std::cout<<"True Negative: "<<true_negative<<std::endl;
 
     float accuracy = (true_positive + true_negative)/float(total_pop);
     float precision = float(true_positive)/(true_positive + false_positive);
     float recall = float(true_positive)/(true_positive + false_negative);
 
-    std::cout<<"accuracy: "<<accuracy<<" precision: "<<precision<<" recall: "<<recall<<std::endl;
-
     float tp_rate = float(true_positive)/positive;
     float tn_rate = float(true_negative)/negative;
     float balance_accuracy = (tp_rate + tn_rate)/2;
 
-    std::cout<<"balance accuracy: "<<balance_accuracy<<std::endl;
-
-
-
     float F1 = 2*(precision*recall)/(precision+recall);
+
+    std::cout<<std::endl<<"Pixel Accuracy Results:"<<std::endl;
+    std::cout<<"Accuracy= "<<accuracy<<", Precision =  "<<precision<<", Recall =  "<<recall<<std::endl;
+    std::cout<<"Balance Accuracy =  "<<balance_accuracy<<std::endl;
     std::cout<<"F1 = "<<F1<<std::endl;
 
-    cv::imshow("A",accuracy_img);
-    cv::waitKey(0);
+
+    //std::cout<<accuracy<<","<<precision<<","<<recall<<","<<balance_accuracy<<","<<F1<<std::endl;
+    cv::putText(pos_neg_img, //target image
+            "True positive", //text
+            cv::Point(col-130,20), //top-left position
+            cv::FONT_HERSHEY_DUPLEX,
+            0.5, //font scale
+            CV_RGB(255,255,255), //font color
+            2);
+    cv::putText(pos_neg_img, //target image
+              "False positive", //text
+              cv::Point(col-130,40), //top-left position
+              cv::FONT_HERSHEY_DUPLEX,
+              0.5, //font scale
+              CV_RGB(255,0,0), //font color
+              2);
+    cv::putText(pos_neg_img, //target image
+              "False negative", //text
+              cv::Point(col-130,60), //top-left position
+              cv::FONT_HERSHEY_DUPLEX,
+              0.4, //font scale
+              CV_RGB(0,0,255), //font color
+              2);
+
+    //cv::imshow("B",pos_neg_img);
+    //cv::imshow("A",accuracy_img);
+    //cv::waitKey(0);
+    return accuracy_img;
 }

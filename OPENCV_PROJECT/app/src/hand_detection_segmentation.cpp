@@ -28,13 +28,16 @@
 #endif
 
 
-int main ( int argc, char** argv )
+int main ( int argc, char* argv[] )
 {
 
     HandDetector detector;
     HandSegmentor segment(&detector);
 
-    const char* img_path = "../../test/rgb/22.jpg";
+
+    std::string str_path = "../../test/rgb/" + std::string(argv[1]);
+    char* img_path = &str_path[0];
+
 
     cv::Mat prova = cv::imread(img_path);
 
@@ -42,17 +45,25 @@ int main ( int argc, char** argv )
     std::vector<float> conf;
     detector.detect_hands(prova, conf, boxes);
 
+
     cv::Mat maskk = segment.final_mask(img_path, boxes);
-    cv::imshow("mask", maskk);
-    cv::waitKey(0);
+
 
     Evaluation ev(img_path, maskk, boxes);
-    cv::Mat iou_img =  ev.IoU();
-    ev.PixelAccuracy();
-    cv::imshow("iou", iou_img);
-    cv::waitKey(0);
-    cv::destroyAllWindows();
+    cv::Mat iou_img;
+    cv::Mat accuracy_img = ev.PixelAccuracy();
 
+
+    if(argc < 3)
+      iou_img = ev.IoU(0); //mode with only the detected bounding box and the IoU result on console
+
+    else
+      iou_img = ev.IoU(1); //mode with the IoU result on the image
+
+    cv::imshow("Original Image", prova);
+    cv::imshow("Accuracy Image", accuracy_img);
+    cv::imshow("Bounding Boxes", iou_img);
+    cv::waitKey(0);
 
     return 0;
 }

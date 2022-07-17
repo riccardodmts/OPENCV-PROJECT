@@ -43,7 +43,7 @@ class Evaluation{
     Evaluation(std::string img_path, std::string true_mask_path, cv::Mat our_mask, std::string bbox_path, std::vector<cv::Rect> our_bbox);
     Evaluation(std::string img_path, cv::Mat our_mask, std::vector<cv::Rect> our_bbox);
 
-    cv::Mat IoU();
-    void PixelAccuracy();
+    cv::Mat IoU(int mode);
+    cv::Mat PixelAccuracy();
 
 };
