@@ -30,14 +30,15 @@ class HandSegmentor{
 
         //PUBLIC METHODS
 
-        //detect hands: it returns the boxes and the corresponding confidences
         void get_segmentation();
 
         void test();//per testare, poi da cancellare
-
+        
+        //it creates a mask for each bounding box
         void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//quella che sostituirà test
         void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);
-
+        
+        //it calls final_masks and it creates the mask shown as result (it colors each hand with a different color)
         cv::Mat final_mask(const char* path, std::vector<cv::Rect> boxes);
 
     //PRIVATE METHODS
