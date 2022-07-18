@@ -2,8 +2,19 @@
 
 #include "evaluation.h"
 
+Evaluation::Evaluation(std::string img_path, cv::Mat our_mask, std::vector<cv::Rect> our_bbox, int aux)
+{
+
+  image = cv::imread(img_path);
+  detected_mask = our_mask;
+  detected_bbox = our_bbox;
+  truth = false;
+
+}
+
 Evaluation::Evaluation(std::string img_path, std::string true_mask_path, cv::Mat our_mask, std::string bbox_path, std::vector<cv::Rect> our_bbox)
 {
+    truth = true;
     image = cv::imread(img_path);
     true_mask = cv::imread(true_mask_path);
     detected_mask = our_mask;
@@ -136,6 +147,8 @@ float Evaluation::IoU(cv::Rect bbox_A, cv::Rect bbox_B)
 	return iou;
 }
 
+
+
 cv::Mat Evaluation::IoU(int mode)
 {
   cv::Mat iou_img = image.clone();
@@ -144,35 +157,35 @@ cv::Mat Evaluation::IoU(int mode)
   for(int i=0;i<detected_bbox.size();i++)
     cv::rectangle(iou_img, detected_bbox.at(i),cv::Scalar(0,0,255),2);
 
-  //version with the IoU result on the image
-  if(mode == 1)
+  if(truth)
   {
-    for(int i=0;i<true_bbox.size();i++)
+    if(mode == 1)
     {
-      //drawing the bounding boxes
-      cv::rectangle(iou_img, true_bbox.at(i),cv::Scalar(255,0,0),2);
+      for(int i=0;i<true_bbox.size();i++)
+      {
+        //drawing the bounding boxes
+        cv::rectangle(iou_img, true_bbox.at(i),cv::Scalar(255,0,0),2);
+        iou = IoU(true_bbox[i],detected_bbox[i]);
 
-
-      iou = IoU(true_bbox[i],detected_bbox[i]);
-
-      //adding the text of the IoU on the image
-      cv::putText(iou_img, //target image
-              "IoU = " + std::to_string(iou), //text
-              cv::Point(true_bbox[i].x-10, true_bbox[i].y-5), //top-left position
-              cv::FONT_HERSHEY_DUPLEX,
-              0.5, //font scale
-              CV_RGB(255,255,255), //font color
-              2);
+        //adding the text of the IoU on the image
+        cv::putText(iou_img, //target image
+                "IoU = " + std::to_string(iou), //text
+                cv::Point(true_bbox[i].x-10, true_bbox[i].y-5), //top-left position
+                cv::FONT_HERSHEY_DUPLEX,
+                0.5, //font scale
+                CV_RGB(255,255,255), //font color
+                2);
+      }
     }
-  }
 
-  else
-  {
-    std::cout<<std::endl<<"IoU Results:"<<std::endl;
-    for(int i=0;i<true_bbox.size();i++)
+    else if(mode == 0)
     {
-      iou = IoU(true_bbox[i],detected_bbox[i]);
-      std::cout<<"IoU-"<<std::to_string(i+1)<<" = "<<iou<<std::endl;
+      std::cout<<std::endl<<"IoU Results:"<<std::endl;
+      for(int i=0;i<true_bbox.size();i++)
+      {
+        iou = IoU(true_bbox[i],detected_bbox[i]);
+        std::cout<<"IoU-"<<std::to_string(i+1)<<" = "<<iou<<std::endl;
+      }
     }
 
   }
@@ -184,9 +197,10 @@ cv::Mat Evaluation::IoU(int mode)
 
 cv::Mat Evaluation::PixelAccuracy(){
 
-  //size check
-  //if(detected_mask.rows != true_mask.rows || detected_mask.cols != true_mask.cols)
-
+  if(!truth)
+  {
+    return Accuracy();
+  }
 
   cv::Mat accuracy_img = image.clone();
   cv::Mat gray_true_mask, gray_det_mask;
@@ -204,8 +218,6 @@ cv::Mat Evaluation::PixelAccuracy(){
   for(int i=0; i < true_mask.rows; i++)
     for(int j=0; j < true_mask.cols; j++)
     {
-
-      int color_ch_modified = int( gray_det_mask.at<uchar>(i,j) ) % 3;
 
       if(int( gray_true_mask.at<uchar>(i,j) ) == 0  && int( gray_det_mask.at<uchar>(i,j) )== 0)
       {
@@ -286,4 +298,21 @@ cv::Mat Evaluation::PixelAccuracy(){
     //cv::imshow("A",accuracy_img);
     //cv::waitKey(0);
     return accuracy_img;
+}
+
+cv::Mat Evaluation::Accuracy()
+{
+  cv::Mat accuracy_img = image.clone();
+  cv::Mat gray_det_mask;
+  int row = image.rows;
+  int col = image.cols;
+
+  cv::cvtColor(detected_mask, gray_det_mask, cv::COLOR_BGR2GRAY);
+
+  for(int i=0; i < detected_mask.rows; i++)
+    for(int j=0; j < detected_mask.cols; j++)
+      if(int( gray_det_mask.at<uchar>(i,j) )!= 0)
+        accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+
+  return accuracy_img;
 }
