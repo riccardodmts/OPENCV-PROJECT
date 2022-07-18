@@ -54,32 +54,38 @@ int main ( int argc, char* argv[] )
     cv::Mat maskk = segment.final_mask(img_path, boxes);
 
     cv::Mat iou_img;
-    cv::Mat accuracy_img;
+    std::vector<cv::Mat> accuracy_imgs;
+
+    //mode with the test image
     if(argc == 2)
     {
        Evaluation ev(img_path, maskk, boxes);
-       accuracy_img = ev.PixelAccuracy();
+       accuracy_imgs = ev.PixelAccuracy();
        iou_img = ev.IoU(0);
     }
 
+    //mode without the ground-truth
     else if(argc == 3)
     {
       Evaluation ev(img_path, maskk, boxes, 0);
-      accuracy_img = ev.PixelAccuracy();
+      accuracy_imgs = ev.PixelAccuracy();
       iou_img = ev.IoU(0);
     }
 
+    //mode with all the paths
     else if(argc == 4)
     {
       Evaluation ev(img_path, std::string(argv[2]), maskk, std::string(argv[3]), boxes);
-      accuracy_img = ev.PixelAccuracy();
+      accuracy_imgs = ev.PixelAccuracy();
       iou_img = ev.IoU(0);
     }
 
     cv::imshow("Original Image", prova);
-    cv::imshow("Accuracy Image", accuracy_img);
+    cv::imshow("Accuracy Image 1", accuracy_imgs[0]);
+    //cv::imshow("Accuracy Image 2", accuracy_imgs[1]); //confusion matrix image
     cv::imshow("Bounding Boxes", iou_img);
     cv::waitKey(0);
 
     return 0;
 }
+
