@@ -67,54 +67,6 @@ void HandSegmentor::get_segmentation()
 
 }
 
-void HandSegmentor::test(){
-
-    cv::Mat segmented = cv::imread(output_path);
-    cv::Mat img = cv::imread(input_path);
-
-    //cv::Mat output;
-    //ptrHandDetector->detect_hands(img, output);
-
-    //cv::imshow("test", output);
-
-
-    std::vector<cv::Rect> boxes;
-    std::vector<float> conf;
-    ptrHandDetector->detect_hands(img, conf, boxes);
-    int idx = 0;
-    int max_disp = 20;
-    cv::Rect box;
-    get_expanded_roi(img, boxes[idx], box, max_disp);
-    std::cout<<std::endl<<boxes[idx].x<<  " " << boxes[idx].y<< " " << boxes[idx].width << " " << boxes[idx].height<<std::endl;
-    std::cout<<std::endl<<box.x<<  " " << box.y<< " " << box.width << " " << box.height<<std::endl;
-
-    std::vector<cv::Mat> masks;
-
-    cv::Mat roi = segmented(box);
-    cv::Mat roi_original = img(box);
-    get_masks_per_region(roi, masks);
-
-    cv::imshow("roi before cut", roi_original);
-    std::cout<<roi_original.size()<<std::endl;
-    cv::Mat output_cut;
-    get_mask_original_size(boxes[idx], box, roi_original, output_cut);
-    cv::imshow("after cutt", output_cut);
-    std::cout<<output_cut.size()<<std::endl;
-    cv::waitKey(0);
-    for(int i = 0; i < masks.size(); i++){
-
-        cv::Mat temp;
-        roi_original.copyTo(temp, masks[i]);
-        cv::Mat out;
-        ptrHandDetector->detect_hands(temp, out);
-        cv::imshow("res", out);
-        cv::waitKey(0);
-
-    }
-
-
-}
-
 //PRIVATE METHODS
 void HandSegmentor::get_masks_per_region(cv::Mat& seg_roi, std::vector<cv::Mat>& masks){
 
@@ -426,4 +378,44 @@ cv::Mat HandSegmentor::final_mask(const char* path, std::vector<cv::Rect> boxes)
   }
 
   return output;
+}
+
+void HandSegmentor::get_biggest_region(cv::Mat& seg_roi, cv::Mat& mask){
+
+    std::vector<cv::Mat> masks;
+
+    get_masks_per_region(seg_roi, masks);
+
+    int n_nozero_pixels = 0;
+    int idx = 0;
+    int temp;
+    for(size_t i = 1; i < masks.size(); i++){
+        temp = count_nozero_pixels(masks[i]);
+
+        if( temp > n_nozero_pixels){
+
+            idx = i;
+            n_nozero_pixels = temp;
+
+        }
+    }
+
+    mask = masks[idx].clone();
+
+
+}
+
+int HandSegmentor::count_nozero_pixels(const cv::Mat& mask){
+
+    int counter = 0;
+
+    for(size_t i = 0; i < mask.rows; i++){
+        for(size_t j = 0; j < mask.cols; j++){
+
+            if((int)(mask.at<uchar>(i,j)) > 0)  counter ++;           
+        }
+    }
+    
+    return counter;
+
 }
