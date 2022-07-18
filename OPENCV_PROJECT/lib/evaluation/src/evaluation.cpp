@@ -41,13 +41,7 @@ Evaluation::Evaluation(std::string img_path, std::string true_mask_path, cv::Mat
 
 
 Evaluation::Evaluation(std::string img_path, cv::Mat our_mask, std::vector<cv::Rect> our_bbox){
-  //in this case I suppose to have the following folder hierarchy
-  /*
-  test |
-       |-> rgb (with the test images)
-       |-> mask (with all the true mask)
-       |-> det (with all the true bbox)
-  */
+
   std::string temp_path = img_path;
   //we separate all the substring with delimiter "/" and we extract the last substring
   // this will be the name of our image
@@ -78,12 +72,7 @@ void Evaluation::ValidateBoundingBox()
   std::vector<cv::Rect> temp_detected_bbox = detected_bbox;
 
   int count = 0;
-  /*
-    for each true bbox we assign our detected bbox that maximize the IoU for that true bbox
-
-    assign, means to order the two vectors (true bbox and detected bbox)
-    and consider the i-th true bbox with the correspondent i-th detected bbox
-  */
+  
   while(count<detected_bbox.size())
   {
     int true_max = -1, det_max = -1;
@@ -94,7 +83,6 @@ void Evaluation::ValidateBoundingBox()
     temp_true_bbox.erase(temp_true_bbox.begin() + true_max);
     temp_detected_bbox.erase(temp_detected_bbox.begin() + det_max);
   }
-
 
 }
 
@@ -124,8 +112,6 @@ void Evaluation::MaximizeIoU(std::vector<cv::Rect> true_box, std::vector<cv::Rec
 }
 
 
-
-
 float Evaluation::IoU(cv::Rect bbox_A, cv::Rect bbox_B)
 {
   int xA = std::max(bbox_A.x, bbox_B.x);
@@ -133,17 +119,13 @@ float Evaluation::IoU(cv::Rect bbox_A, cv::Rect bbox_B)
 	int xB = std::min(bbox_A.x + bbox_A.width, bbox_B.x + bbox_B.width);
 	int yB = std::min(bbox_A.y + bbox_A.height, bbox_B.y + bbox_B.height);
 
-	//compute the area of intersection rectangle
 	int interArea = std::max(0, xB - xA + 1) * std::max(0, yB - yA + 1);
 
-	//compute the area of both the prediction and ground-truth rectangles
 	int boxAArea = (bbox_A.width+1) * (bbox_A.height+1);
 	int boxBArea = (bbox_B.width+1) * (bbox_B.height+1);
 
-	//compute the intersection over union by taking the intersection
-	//area and dividing it by the sum of prediction + ground-truth areas - the interesection area
 	float iou = interArea / float(boxAArea + boxBArea - interArea);
-	//return the intersection over union value
+
 	return iou;
 }
 
@@ -157,6 +139,7 @@ cv::Mat Evaluation::IoU(int mode)
   for(int i=0;i<detected_bbox.size();i++)
     cv::rectangle(iou_img, detected_bbox.at(i),cv::Scalar(0,0,255),2);
 
+  // if there are the true bbox
   if(truth)
   {
     if(mode == 1)
@@ -195,8 +178,9 @@ cv::Mat Evaluation::IoU(int mode)
 
 
 
-cv::Mat Evaluation::PixelAccuracy(){
+std::vector<cv::Mat> Evaluation::PixelAccuracy(){
 
+  //if there is not the true mask
   if(!truth)
   {
     return Accuracy();
@@ -233,7 +217,6 @@ cv::Mat Evaluation::PixelAccuracy(){
         pos_neg_img.at<cv::Vec3b>(i,j)[0] = 255;
         pos_neg_img.at<cv::Vec3b>(i,j)[1] = 255;
         pos_neg_img.at<cv::Vec3b>(i,j)[2] = 255;
-        //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
       else if(int( gray_true_mask.at<uchar>(i,j) ) != 0  && int( gray_det_mask.at<uchar>(i,j) ) == 0)
@@ -249,7 +232,6 @@ cv::Mat Evaluation::PixelAccuracy(){
         negative++;
         accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
         pos_neg_img.at<cv::Vec3b>(i,j)[0] = 255;
-        //accuracy_img.at<cv::Vec3b>(i,j)[color_ch_modified]+= int( gray_det_mask.at<uchar>(i,j) ) /3;
       }
 
     }
@@ -271,7 +253,6 @@ cv::Mat Evaluation::PixelAccuracy(){
     std::cout<<"F1 = "<<F1<<std::endl;
 
 
-    //std::cout<<accuracy<<","<<precision<<","<<recall<<","<<balance_accuracy<<","<<F1<<std::endl;
     cv::putText(pos_neg_img, //target image
             "True positive", //text
             cv::Point(col-130,20), //top-left position
@@ -290,29 +271,41 @@ cv::Mat Evaluation::PixelAccuracy(){
               "False negative", //text
               cv::Point(col-130,60), //top-left position
               cv::FONT_HERSHEY_DUPLEX,
-              0.4, //font scale
+              0.5, //font scale
               CV_RGB(0,0,255), //font color
               2);
 
-    //cv::imshow("B",pos_neg_img);
-    //cv::imshow("A",accuracy_img);
-    //cv::waitKey(0);
-    return accuracy_img;
+    std::vector<cv::Mat> mat_vector;
+    mat_vector.push_back(accuracy_img);
+    mat_vector.push_back(pos_neg_img);
+
+    return mat_vector;
 }
 
-cv::Mat Evaluation::Accuracy()
+std::vector<cv::Mat> Evaluation::Accuracy()
 {
   cv::Mat accuracy_img = image.clone();
   cv::Mat gray_det_mask;
   int row = image.rows;
   int col = image.cols;
+  cv::Mat pos_neg_img = cv::Mat::zeros(row, col, CV_8UC3);
 
   cv::cvtColor(detected_mask, gray_det_mask, cv::COLOR_BGR2GRAY);
 
   for(int i=0; i < detected_mask.rows; i++)
     for(int j=0; j < detected_mask.cols; j++)
       if(int( gray_det_mask.at<uchar>(i,j) )!= 0)
+      {
         accuracy_img.at<cv::Vec3b>(i,j) = detected_mask.at<cv::Vec3b>(i,j);
+        pos_neg_img.at<cv::Vec3b>(i,j)[0] = 255;
+        pos_neg_img.at<cv::Vec3b>(i,j)[1] = 255;
+        pos_neg_img.at<cv::Vec3b>(i,j)[2] = 255;
+      }
 
-  return accuracy_img;
+      std::vector<cv::Mat> mat_vector;
+      mat_vector.push_back(accuracy_img);
+      mat_vector.push_back(pos_neg_img);
+
+      return mat_vector;
 }
+
