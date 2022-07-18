@@ -290,7 +290,7 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
             cv::Mat bad_mask;
             
             //bad_mask = cv::Mat(boxes[i].height, boxes[i].width, CV_8UC1, cv::Scalar(255));
-            temp = segmented(boxes[i]);
+            cv::Mat temp = segmented(boxes[i]);
             get_biggest_region(temp, bad_mask);
             masks.push_back(bad_mask);
         }
