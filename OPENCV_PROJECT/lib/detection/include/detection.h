@@ -1,8 +1,4 @@
 //detection.h
-//author: Riccardo De Monte
-//hours spent: 2
-
-
 
 #ifndef _STD_
 #define _STD_
@@ -20,52 +16,44 @@ using namespace cv::dnn;
 
 class HandDetector{
 
+
     private:
 
-        const std::string class_name = "Hand";
+        Net net;
+        float nms_th, conf_th;
+        int width, height;
 
-        Net yolo_net;
-
-        DetectionModel model;
-
-        std::vector<Net> nets; //not used
-        std::vector<DetectionModel> models; //not used
-
-        int size;
         float normalize;
-
-        float nmaxima_thresh;
-        float conf_threshold;
 
     public:
 
-        //CONSTRUCTORS
-
         HandDetector();
-        HandDetector(float conf_threshold, float nmaxima_thresh);
-        HandDetector(const std::string& cfg_path, const std::string& weigths_path);
-        HandDetector(const std::string& cfg_path, const std::string& weigths_path, int size, float conf_threshold, float nmaxima_thresh);
 
-        //PUBLIC METHODS
+        //change params
+        HandDetector(float conf_th, float nms_th, int size);
 
-        //detect hands: it returns the boxes and the corresponding confidences
-        void detect_hands(const cv::Mat& image, std::vector<float>& scores, std::vector<cv::Rect>& boxes);
+        //specify path for .cfg and .weights
+        HandDetector(const std::string& cfg_path, const std::string& weights_path);
 
-        //detect hands: it returns (output) the image with the boxes drawn
-        void detect_hands(const cv::Mat& image, cv::Mat & output);
-    
-    //private:
+        //change params and specify path for .cfg and .weights
+        HandDetector(float conf_th, float nms_th, int size, const std::string& cfg_path, const std::string& weights_path);
+        
+        //this method return the bounding boxes and the corresponding confidence levels
+        //it calls HandDetector::process_results
+        void detect_hands(const cv::Mat& image, std::vector<float>& confs, std::vector<cv::Rect>& bboxes);
 
-        //PRIVATE METHODS
-        //draw bounding boxes, provided the results of the hads detection (the boxes)
-        void draw_bbox(const cv::Mat& image, cv::Mat & output, std::vector<cv::Rect>& boxes);
+        //this method detect hands and draws the bounding boxes on output (output will be an hard copy of image)
+        //to draw, it calls HandDetector::draw_bboxes , while for the detection it calls the previous HandDetector::detect_hands
+        void detect_hands(const cv::Mat& image, cv::Mat& output);
 
+        //draws the bounding boxes on output (output will be an hard copy of image)
+        void draw_bboxes(const cv::Mat& image, cv::Mat& output, std::vector<cv::Rect>& bboxes);
 
+    private:
+
+        //this method processes the output of the CNN
+        void process_results(const std::vector<cv::Mat>& output, std::vector<float> confs, std::vector<cv::Rect>& bboxes, int rows, int cols);
+        void resize_bbox(cv::Rect& bbox, int rows, int cols);
+        
 };
-
-//
-void detection_print();
-
-
-
 
