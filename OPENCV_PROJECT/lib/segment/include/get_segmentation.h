@@ -52,6 +52,10 @@ class HandSegmentor{
         void get_idx_of_regions(const cv::Mat& roi_img, const std::vector<cv::Mat>& masks, std::vector<int>& idxs, const cv::Rect& original_box);
         void get_mask_union(const std::vector<cv::Mat>& masks, std::vector<int>& idxs, cv::Mat& final_mask);
         void intersect_masks(const cv::Mat& input_union, const cv::Mat& input_skin, cv::Mat& output);
+    
+        void get_biggest_region(cv::Mat& seg_roi, cv::Mat& mask);
+        int count_nozero_pixels(const cv::Mat& mask);
+
 
 
 
