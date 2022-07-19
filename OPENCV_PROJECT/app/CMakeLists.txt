@@ -14,9 +14,6 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_executable(app src/hand_detection_segmentation.cpp)
 
-
-target_link_libraries( app
-    PUBLIC LII::classifier)
     
 target_link_libraries( app
     PUBLIC LII::skin_segmentation)
