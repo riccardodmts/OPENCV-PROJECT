@@ -13,7 +13,6 @@ project( Create_and_test_hand_detection_and_segmentation_library
 #endif()
 
 # Create targets for building the (local) libraries.
-add_subdirectory( lib/classifier )
 add_subdirectory( lib/detection )
 add_subdirectory( lib/skin_segmentation )
 add_subdirectory( lib/evaluation )
