@@ -19,9 +19,6 @@ add_library( skin_segmentation
 
 target_include_directories( skin_segmentation
     PUBLIC include )
-
-target_link_libraries( skin_segmentation
-    PUBLIC LII::classifier)
     
 target_link_libraries( skin_segmentation 
     PUBLIC ${OpenCV_LIBS} )
