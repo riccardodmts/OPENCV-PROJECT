@@ -23,8 +23,6 @@ target_include_directories( detection
 target_link_libraries( detection
     PUBLIC LII::detection)
 	
-target_link_libraries( detection
-    PUBLIC LII::classifier)
     
 target_link_libraries( detection 
     PUBLIC ${OpenCV_LIBS} )
