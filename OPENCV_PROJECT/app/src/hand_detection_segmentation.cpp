@@ -45,11 +45,11 @@ int main ( int argc, char* argv[] )
     char* img_path = &str_path[0];
 
 
-    cv::Mat prova = cv::imread(img_path);
+    cv::Mat img = cv::imread(img_path);
 
     std::vector<cv::Rect> boxes;
     std::vector<float> conf;
-    detector.detect_hands(prova, conf, boxes);
+    detector.detect_hands(img, conf, boxes);
 
     cv::Mat maskk = segment.final_mask(img_path, boxes);
 
@@ -80,7 +80,7 @@ int main ( int argc, char* argv[] )
       iou_img = ev.IoU(0);
     }
 
-    cv::imshow("Original Image", prova);
+    cv::imshow("Original Image", img);
     cv::imshow("Accuracy Image 1", accuracy_imgs[0]);
     //cv::imshow("Accuracy Image 2", accuracy_imgs[1]); //confusion matrix image
     cv::imshow("Bounding Boxes", iou_img);
