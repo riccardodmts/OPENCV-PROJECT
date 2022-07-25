@@ -29,14 +29,11 @@ class HandSegmentor{
         HandSegmentor(HandDetector* ptrHandDetector, float sigma, float k, int min_size, const char *input_path, const char *output_path);
 
         //PUBLIC METHODS
-
-        //detect hands: it returns the boxes and the corresponding confidences
+    
         void get_segmentation();
 
-        void test();//per testare, poi da cancellare
-
-        void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//quella che sostituirà test
-        void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);
+        void final_masks(const char* path, std::vector<cv::Rect>& boxes, std::vector<cv::Mat>& masks);//get final masks
+        void from_skin_to_mask(const cv::Mat& skin_output, cv::Mat& output);//get a binary mask from skin_segmentation algorithm
 
         cv::Mat final_mask(const char* path, std::vector<cv::Rect> boxes);
 
