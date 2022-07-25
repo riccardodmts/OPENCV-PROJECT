@@ -7,28 +7,6 @@
 
 #endif
 
-cv::Mat equalizeIntensity(const cv::Mat& inputImage)
-{
-    if(inputImage.channels() >= 3)
-    {
-        cv::Mat ycrcb;
-
-        cv::cvtColor(inputImage,ycrcb, cv::COLOR_BGR2YCrCb);
-
-        std::vector<cv::Mat> channels;
-        cv::split(ycrcb,channels);
-
-        cv::equalizeHist(channels[0], channels[0]);
-
-        cv::Mat result;
-        cv::merge(channels,ycrcb);
-
-        cv::cvtColor(ycrcb,result,cv::COLOR_YCrCb2BGR);
-
-        return result;
-    }
-    return cv::Mat();
-}
 
 //compute the region of the image that can be considered as skin
 cv::Mat get_skin(cv::Mat Input_image)
@@ -99,10 +77,10 @@ cv::Mat K_Means(cv::Mat Input, int K, cv::Mat &RGB_centers) {
 		for (int x = 0; x < Input.cols; x++)
 			for (int z = 0; z < Input.channels(); z++)
 				if (Input.channels() == 3) {
-					samples.at<float>(y + x * Input.rows, z) = Input.at<cv::Vec3b>(y, x)[z];
+					samples.at<float>(y + x * Input.rows, z) = Input.at<cv::Vec3b>(y, x)[z]; //for three channels images
 				}
 				else {
-					samples.at<float>(y + x * Input.rows, z) = Input.at<uchar>(y, x);
+					samples.at<float>(y + x * Input.rows, z) = Input.at<uchar>(y, x); //for single channel images
 				}
 
 
@@ -110,11 +88,11 @@ cv::Mat K_Means(cv::Mat Input, int K, cv::Mat &RGB_centers) {
 	int attempts = 5;
 	cv::Mat centers;
 	cv::kmeans( samples, K, labels, cv::TermCriteria(cv::TermCriteria::MAX_ITER | cv::TermCriteria::EPS, 10000, 0.0001),
-            attempts, cv::KMEANS_PP_CENTERS, centers );
+            attempts, cv::KMEANS_PP_CENTERS, centers ); //kmeans algorithm
 
     RGB_centers = centers;
 
-	cv::Mat new_image(Input.size(), Input.type());
+	cv::Mat new_image(Input.size(), Input.type()); //create segmented image based on kmean's labels
 	for (int y = 0; y < Input.rows; y++)
 		for (int x = 0; x < Input.cols; x++)
 		{
