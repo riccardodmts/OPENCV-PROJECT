@@ -22,7 +22,7 @@
 #include "detection.h"
 #endif
 
-#ifndef _EV_ //detection class (CNN based)
+#ifndef _EV_ //evaluation class 
 #define _EV_
 #include "evaluation.h"
 #endif
