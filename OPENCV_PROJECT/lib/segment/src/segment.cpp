@@ -264,7 +264,7 @@ void HandSegmentor::final_masks(const char* path, std::vector<cv::Rect>& boxes, 
         get_masks_per_region(seg_cropped, masks_per_region);
         std::vector<int> idxs;
         
-        //check which regions is hand (which pass the test)
+        //check which region is hand (the ones that pass the test) and save the corresponding indexes
         get_idx_of_regions(img_cropped, masks_per_region, idxs, boxes[i]);
 
         cv::Mat final_mask; //final result for current bbox
