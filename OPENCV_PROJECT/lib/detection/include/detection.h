@@ -52,7 +52,7 @@ class HandDetector{
     private:
 
         //this method processes the output of the CNN
-        void process_results(const std::vector<cv::Mat>& output, std::vector<float> confs, std::vector<cv::Rect>& bboxes, int rows, int cols);
+        void process_results(const std::vector<cv::Mat>& output, std::vector<float>& confs, std::vector<cv::Rect>& bboxes, int rows, int cols);
         void resize_bbox(cv::Rect& bbox, int rows, int cols);
         
 };
