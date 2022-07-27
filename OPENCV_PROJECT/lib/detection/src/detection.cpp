@@ -158,8 +158,8 @@ void HandDetector::resize_bbox(cv::Rect& bbox, int rows, int cols){
     if(bbox.x < 0) bbox.x = 0;
     if(bbox.y < 0) bbox.y = 0;
 
-    if(bbox.x + bbox.width > cols) bbox.width = cols - bbox.x;
-    if(bbox.y + bbox.height > rows) bbox.height = rows - bbox.y;
+    if((bbox.x + bbox.width) > cols) bbox.width = cols - bbox.x;
+    if((bbox.y + bbox.height) > rows) bbox.height = rows - bbox.y;
 
 
 }
