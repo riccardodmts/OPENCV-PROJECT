@@ -92,7 +92,7 @@ void HandDetector::detect_hands(const cv::Mat& image, cv::Mat& output){
 
 //PRIVATE METHODS
 
-void HandDetector::process_results(const std::vector<cv::Mat>& output, std::vector<float> confs, std::vector<cv::Rect>& bboxes, int rows, int cols){
+void HandDetector::process_results(const std::vector<cv::Mat>& output, std::vector<float>& confs, std::vector<cv::Rect>& bboxes, int rows, int cols){
 
     std::vector<int> idxs;
 
